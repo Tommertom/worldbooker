@@ -1,0 +1,8 @@
+{
+  "name": "worldbooker",
+  "app_id": "8669ae2f",
+  "type": "ionic-angular",
+  "integrations": {
+    "cordova": {}
+  }
+}
