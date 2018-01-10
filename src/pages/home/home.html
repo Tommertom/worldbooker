@@ -8,11 +8,30 @@
 </ion-header>
 
 <ion-content padding>
-  <h3>Ionic Menu Starter</h3>
 
-  <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will show you the way.
-  </p>
+  <ion-grid>
+    <ion-row>
+      <ion-col col-1>
+        Score
+      </ion-col>
+      <ion-col *ngFor="let area of selectedAreas">
+        {{area}}
+      </ion-col>
+    </ion-row>
+    <ion-row *ngFor="let j of items">
+      <ion-col col-1>
+        {{j.overallScore}}%
+      </ion-col>
 
-  <button ion-button secondary menuToggle>Toggle Menu</button>
+      <ng-container *ngFor="let i of j.gridColumns">
+        <ion-col [style.background-color]="i.backgroundcolor">
+          {{i.time}}
+        </ion-col>
+      </ng-container>
+    </ion-row>
+  </ion-grid>
+
+  <ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
