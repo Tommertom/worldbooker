@@ -1,21 +1,11 @@
-<ion-header>
-  <ion-navbar>
-    <button ion-button menuToggle>
-      <ion-icon name="menu"></ion-icon>
-    </button>
-    <ion-title>Home</ion-title>
-  </ion-navbar>
-</ion-header>
-
 <ion-content padding>
-
   <ion-grid>
     <ion-row>
       <ion-col col-1>
         Score
       </ion-col>
       <ion-col *ngFor="let area of selectedAreas">
-        {{area}}
+        <span (click)="changeArea(area)">  {{area.city}}</span>
       </ion-col>
     </ion-row>
     <ion-row *ngFor="let j of items">

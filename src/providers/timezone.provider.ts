@@ -26,12 +26,6 @@ export class TimeZoneProvider {
 
     constructor(private http: Http) {
 
-        this.http.get('assets/data/zone.json')
-            .map(data => data.json())
-            .toPromise()
-            .then(data => {
-                this.zones = data;
-            })
 
         this.http.get('assets/data/country.json')
             .map(data => data.json())
@@ -56,7 +50,13 @@ export class TimeZoneProvider {
     };
 
     getZones() {
-        return this.zones;
+        return this.http.get('assets/data/zone.json')
+            .map(data => data.json())
+            .toPromise()
+            .then(data => {
+                this.zones = data;
+                return data
+            })
     }
 
     getCountry() {
