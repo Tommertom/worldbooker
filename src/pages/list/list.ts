@@ -54,7 +54,7 @@ export class ListPage {
       })
   }
 
-  itemTapped(item) {
+  itemClick(item) {
     this.viewCtrl.dismiss(item);
   }
 

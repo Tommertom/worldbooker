@@ -1,23 +1,25 @@
-<ion-content padding>
+<ion-content>
   <ion-grid>
-    <ion-row>
-      <ion-col col-1>
-        Score
+    <ion-row style="position: sticky; top: 0;left: 0; right: 0; z-index: 9999">
+      <ion-col col-1 [style.background-color]="'blue'">
+        <span (click)="doCheckbox()">Score</span>
       </ion-col>
-      <ion-col *ngFor="let area of selectedAreas">
+      <ion-col *ngFor="let area of selectedAreas" [style.background-color]="'blue'">
         <span (click)="changeArea(area)">  {{area.city}}</span>
       </ion-col>
     </ion-row>
-    <ion-row *ngFor="let j of items">
-      <ion-col col-1>
+    <ion-row *ngFor="let j of itemsInView">
+
+      <ion-col col-1 [style.background-color]="'blue'">
         {{j.overallScore}}%
       </ion-col>
 
       <ng-container *ngFor="let i of j.gridColumns">
         <ion-col [style.background-color]="i.backgroundcolor">
-          {{i.time}}
+          {{i.time_string}}
         </ion-col>
       </ng-container>
+
     </ion-row>
   </ion-grid>
 

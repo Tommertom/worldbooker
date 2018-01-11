@@ -12,6 +12,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 
 import { TimeZoneProvider } from '../providers/timezone.provider';
 
+import { IonicStorageModule } from '@ionic/storage';
+
 
 @NgModule({
   declarations: [
@@ -22,6 +24,10 @@ import { TimeZoneProvider } from '../providers/timezone.provider';
   imports: [
     BrowserModule, HttpModule,
     IonicModule.forRoot(MyApp),
+    IonicStorageModule.forRoot({
+      name: 'worldbooker',
+      driverOrder: ['sqlite', 'indexeddb', 'websql']
+    })
   ],
   bootstrap: [IonicApp],
   entryComponents: [
