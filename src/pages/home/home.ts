@@ -1,4 +1,3 @@
-
 import { Component } from '@angular/core';
 import { NavController, PopoverController, AlertController } from 'ionic-angular';
 
@@ -7,8 +6,26 @@ import { TimeZoneProvider } from './../../providers/timezone.provider';
 import { Storage } from '@ionic/storage';
 
 const hourInMilSecs = 60 * 60 * 1000;
-
 const scrollPageSize = 60;
+
+export interface DisplayLine {
+  areas: Array<AreaDisplay>;
+  overall_score: number;
+}
+
+export interface AreaDisplay {
+  area_name: string;
+  area_city: string;
+  time_number: Date;
+  time_string: string;
+  backgroundcolor: string;
+  nice_code: number;
+}
+
+export interface Area {
+  area_name: string;
+  area_city: string;
+}
 
 @Component({
   selector: 'page-home',
@@ -16,14 +33,14 @@ const scrollPageSize = 60;
 })
 export class HomePage {
 
-  items = [];
-  itemsInView = [];
+  items: Array<DisplayLine> = [];
+  itemsInView: Array<DisplayLine> = [];
 
-  now = 0;
-  selectedAreas = [];
-  possibleAreas = [];
+  selectedAreas: Array<Area> = [];
+  possibleAreas: Array<Area> = [];
 
   scoreFilter: number = 0;
+  now = 0;
 
   constructor(
     public navCtrl: NavController,
@@ -42,7 +59,7 @@ export class HomePage {
 
           this.possibleAreas.push({
             area_name: zone['zone_name'],
-            city: zone['zone_name'].split('/').pop()
+            area_city: zone['zone_name'].split('/').pop()
           })
         });
       })
@@ -51,17 +68,19 @@ export class HomePage {
 
     this.storage.ready()
       .then(() => {
-
         this.storage.get('selectedAreas')
           .then(val => {
-            if (val) {
+
+            if (val != null) {
               this.selectedAreas = val;
-            } else this.selectedAreas = [
-              { area_name: 'Europe/Amsterdam', city: 'Amsterdam' },
-              { area_name: 'Asia/Singapore', city: 'Singapore' },
-              { area_name: 'America/St_Barthelemy', city: 'St_Barthelemy' },
-              { area_name: 'Europe/Volgograd', city: 'Volgograd' }
-            ];
+            } else
+
+              this.selectedAreas = [
+                { area_name: 'Europe/Amsterdam', area_city: 'Amsterdam' },
+                { area_name: 'Asia/Singapore', area_city: 'Singapore' },
+                { area_name: 'America/St_Barthelemy', area_city: 'St_Barthelemy' },
+                { area_name: 'Europe/Volgograd', area_city: 'Volgograd' }
+              ];
           })
           .then(() => {
             for (let i = 0; i < scrollPageSize; i++)
@@ -69,7 +88,6 @@ export class HomePage {
 
             this.refreshLinesOnScore();
           })
-
       })
 
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
@@ -78,7 +96,7 @@ export class HomePage {
 
   refreshLinesOnScore() {
     this.itemsInView = this.items.filter(item => {
-      return item['overallScore'] > this.scoreFilter
+      return item.overall_score > this.scoreFilter
     })
   }
 
@@ -137,7 +155,7 @@ export class HomePage {
   addTimeLine() {
     let time = new Date(this.now + this.items.length * hourInMilSecs);
 
-    let lineItem = [];
+    let lineItem: Array<AreaDisplay> = [];
     let overallScore = 0;
     this.selectedAreas.map(area => {
 
@@ -150,11 +168,12 @@ export class HomePage {
       if (niceCode == 2) backColor = 'red';
 
       lineItem.push({
-        area: area,
+        area_name: area.area_name,
+        area_city: area.area_city,
         time_number: time,
         time_string: this.getTimeString(area_name, time),
         backgroundcolor: backColor, //this.getBackColor(area, time),
-        nicecode: niceCode
+        nice_code: niceCode
       })
 
       overallScore += niceCode;
@@ -162,52 +181,84 @@ export class HomePage {
 
     overallScore = Math.round(100 - (100 * (overallScore / (lineItem.length * 2))));
 
-    this.items.push({ overallScore: overallScore, gridColumns: lineItem });
+    this.items.push({ overall_score: overallScore, areas: lineItem });
   }
 
-  updateTimeLines(areaToRefresh) {
+  changeArea(area) {
+    //    console.log('AAREE', area)
 
-    let lineItem = [];
-    this.items.map(itemrow => {
+    let popover = this.popoverCtrl.create(ListPage, { preferredAreas: [], allAreas: this.possibleAreas }, {
+      showBackdrop: true,
+      enableBackdropDismiss: true
+    });
 
-      let overallScore = 0;
-      lineItem = itemrow['gridColumns'];
+    popover.onDidDismiss(data => {
+      console.log('Recevied data', data)
 
-      lineItem
-        .map(area => {
-          let niceCode = area['nicecode'];
-          overallScore = 0;
+      if (data) {
+        area.area_name = data['area_name']
+        area.area_city = data['city'];
 
-          if (area['area']['city'] == areaToRefresh['city']) {
+        this.updateTimeLines();
 
-            niceCode = this.getNiceCode(area['area']['area_name'], area['time_number'])
+        console.log('selectedAreas', this.selectedAreas);
 
-            let backColor = 'green';
-            if (niceCode == 1) backColor = 'orange';
-            if (niceCode == 2) backColor = 'red';
-
-            area = Object.assign(area,
-              {
-                backgroundcolor: backColor,
-                nicecode: niceCode
-              })
-          }
-
-          overallScore += niceCode;
-        })
-
-      overallScore = Math.round(100 - (100 * (overallScore / (lineItem.length * 2))));
-
-      itemrow['overallScore'] = overallScore;
+        this.storage.set('selectedAreas', this.selectedAreas);
+      }
     })
+    popover.present({});
+
+  }
 
 
+  updateTimeLines() {
+
+    let itemCount = this.items.length;
+    this.items = [];
+
+    for (let i = 0; i < itemCount; i++)
+      this.addTimeLine();
+
+    /*
+    
+        this.items.map(itemrow => {
+          let lineItems: Array<AreaDisplay> = [];
+          let overallScore = 0;
+    
+          lineItems = itemrow.areas;
+    
+          lineItems
+            .map(area => {
+              let niceCode = area.nice_code;
+              overallScore = 0;
+    
+              if (area.area_city == areaToRefresh.area_city) {
+    
+                niceCode = this.getNiceCode(area.area_name, area.time_number)
+    
+                let backColor = 'green';
+                if (niceCode == 1) backColor = 'orange';
+                if (niceCode == 2) backColor = 'red';
+    
+                // assign new values
+                area.backgroundcolor = backColor;
+                area.nice_code = niceCode;
+                area.time_string = this.getTimeString(area.area_name, area.time_number);
+              }
+    
+              overallScore += niceCode;
+            })
+    
+          overallScore = Math.round(100 - (100 * (overallScore / (lineItems.length * 2))));
+    
+          itemrow.overall_score = overallScore;
+        })
+    */
 
     this.refreshLinesOnScore();
-
   }
 
-  doCheckbox() {
+  doFilterCheckbox(currentnice_code: number) {
     let alert = this.alertCtrl.create();
     alert.setTitle('Select score filter');
 
@@ -215,7 +266,7 @@ export class HomePage {
       type: 'checkbox',
       label: '>75%',
       value: '75',
-      checked: true
+      checked: currentnice_code > 75
     });
 
     alert.addInput({
@@ -259,36 +310,10 @@ export class HomePage {
     });
   }
 
-
-  changeArea(area) {
-    console.log('AAREE', area)
-
-    let popover = this.popoverCtrl.create(ListPage, { preferredAreas: [], allAreas: this.possibleAreas }, {
-      showBackdrop: true,
-      enableBackdropDismiss: true
-    });
-
-    popover.onDidDismiss(data => {
-      console.log('Recevied data', data, area)
-
-      if (data) {
-        area['area_name'] = data['area_name']
-        area['city'] = data['city'];
-
-        this.updateTimeLines(area);
-
-        this.storage.set('selectedAreas', this.selectedAreas);
-      }
-    })
-    popover.present({});
-
-  }
-
   doInfinite(infiniteScroll) {
     setTimeout(() => {
-      for (let i = 0; i < scrollPageSize; i++) {
+      for (let i = 0; i < scrollPageSize; i++)
         this.addTimeLine();
-      }
 
       this.refreshLinesOnScore();
 

@@ -1,21 +1,21 @@
 <ion-content>
   <ion-grid>
-    <ion-row style="position: sticky; top: 0;left: 0; right: 0; z-index: 9999">
-      <ion-col col-1 [style.background-color]="'blue'">
-        <span (click)="doCheckbox()">Score</span>
+    <ion-row class="grid-header" style="position: sticky; top: 5;left: 0; right: 0; z-index: 9999">
+      <ion-col col-1 text-center [style.background-color]="'blue'">
+        <span (click)="doFilterCheckbox(scoreFilter)"> <ion-icon name="search"></ion-icon> </span>
       </ion-col>
-      <ion-col *ngFor="let area of selectedAreas" [style.background-color]="'blue'">
+      <ion-col *ngFor="let area of selectedAreas" text-center [style.background-color]="'blue'">
         <span (click)="changeArea(area)">  {{area.city}}</span>
       </ion-col>
     </ion-row>
     <ion-row *ngFor="let j of itemsInView">
 
-      <ion-col col-1 [style.background-color]="'blue'">
-        {{j.overallScore}}%
+      <ion-col col-1 text-center class="score-column" [style.background-color]="'blue'">
+        {{j.overall_score}}%
       </ion-col>
 
-      <ng-container *ngFor="let i of j.gridColumns">
-        <ion-col [style.background-color]="i.backgroundcolor">
+      <ng-container *ngFor="let i of j.areas">
+        <ion-col text-nowrap text-center class="area-display-cell" [style.background-color]="i.backgroundcolor">
           {{i.time_string}}
         </ion-col>
       </ng-container>
