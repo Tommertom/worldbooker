@@ -181,7 +181,7 @@ export class HomePage {
 
   changeArea(area) {
 
-    let popover = this.popoverCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas }, {
+    let popover = this.modalCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas }, {
       showBackdrop: true,
       enableBackdropDismiss: true
     });
@@ -189,12 +189,13 @@ export class HomePage {
     popover.onDidDismiss(data => {
       if (data) {
 
-
         area.area_name = data['area_name'];
         area.area_city = data['area_city'];
 
         if (area.area_name != 'undefined')
           if (this.earlierSelectedAreas.filter((areaItem => { return areaItem.area_name == area.area_name })).length == 0) {
+
+            console.log('ADASDSADAS', data, area)
             this.earlierSelectedAreas.push(area);
             this.saveSettings();
           }
@@ -230,23 +231,15 @@ export class HomePage {
 
     modal.onDidDismiss(data => {
       if (data) {
-
-        console.log('RECEIVED DATA', data)
         this.scoreFilter = data['scoreFilter'];
         this.earlierSelectedAreas = data['earlierSelectedAreas']
 
-        /*
-                let lowest = 100;
-                data.map(value => {
-                  if (Number(value) < lowest)
-                    lowest = Number(value);
-                })
-                this.scoreFilter = lowest;
-        */
-      }
+        this.saveSettings();
 
-      this.refreshLinesOnScore()
+        this.refreshLinesOnScore()
+      }
     })
+
     modal.present();
   }
 
@@ -285,6 +278,8 @@ export class HomePage {
 
             if (val != null)
               this.selectedAreas = val;
+
+            this.selectedAreas = [];
 
             //this.selectedAreas = [];
 

@@ -4,7 +4,7 @@
       <ion-col col-1 text-center [style.background-color]="'blue'">
         <span (click)="openSettings(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
       </ion-col>
-      <ion-col *ngFor="let area of selectedAreas" text-center [style.background-color]="'blue'">
+      <ion-col *ngFor="let area of selectedAreas" text-nowrap text-center [style.background-color]="'blue'">
         <span *ngIf="area.area_city!='undefined'" (click)="changeArea(area)">{{area.area_city}}</span>
         <span *ngIf="area.area_city=='undefined'" (click)="changeArea(area)">No area selected</span>
       </ion-col>
@@ -13,7 +13,7 @@
 </ion-header>
 
 <ion-content>
-  <ion-grid style="padding-top: 0px">
+  <ion-grid style="padding-top:0px">
     <ion-row *ngFor="let j of itemsInView">
 
       <ion-col col-1 text-nowrap text-center class="score-column" [style.background-color]="'blue'">

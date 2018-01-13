@@ -35,8 +35,9 @@ export class ListPage {
 
 
   onCancel(event) {
-    //console.log('EVENT ', event, this.myInput);
-    this.refreshDisplayList();
+    //this.close();
+    this.myInput="";
+ //   this.refreshDisplayList();
   }
 
   refreshDisplayList() {

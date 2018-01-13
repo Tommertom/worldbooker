@@ -1,23 +1,24 @@
 <ion-header>
-  <ion-searchbar [(ngModel)]="myInput" (ionInput)="onInput($event)" (ionCancel)="onCancel($event)">
-  </ion-searchbar>
+
+  <ion-toolbar>
+    <ion-searchbar [(ngModel)]="myInput" (ionInput)="onInput($event)" (ionCancel)="onCancel($event)"></ion-searchbar>
+    <ion-buttons end>
+      <button ion-button (click)='close()'>
+				Close
+			  </button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <button ion-button full (click)="itemClick({area_name:'undefined', area_city:'undefined'})">Clear area</button>
   <ion-list>
-
-    <ion-item (click)="itemClick({area_name:'undefined', area_city:'undefined'})">
-      Remove area
-    </ion-item>
-
-    <br>
-
+    <br *ngIf="earlierSelectedAreas.length>0"><span *ngIf="earlierSelectedAreas.length>0"> Earlier selected areas</span>
     <ion-item *ngFor="let area of earlierSelectedAreas" (click)="itemClick(area)">
       {{area.area_name}}
     </ion-item>
 
-    <br *ngIf="earlierSelectedAreas.length>0">
-
+    <br *ngIf="earlierSelectedAreas.length>0"> All areas
     <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">
       {{area.area_name}}
     </ion-item>
