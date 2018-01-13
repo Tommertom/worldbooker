@@ -88,7 +88,10 @@ export class HomePage {
             if (val != null)
               this.selectedAreas = val;
 
-            if (this.selectedAreas.length == 0)
+
+            this.selectedAreas = [];
+            
+            if (this.selectedAreas.length == 0) {
               this.selectedAreas = [
                 { area_name: 'Europe/Amsterdam', area_city: 'Amsterdam' },
                 { area_name: 'Asia/Singapore', area_city: 'Singapore' },
@@ -96,6 +99,8 @@ export class HomePage {
                 { area_name: 'Europe/Volgograd', area_city: 'Volgograd' }
               ];
 
+              this.storage.set('selectedAreas', this.selectedAreas)
+            }
           })
           .then(() => {
             for (let i = 0; i < scrollPageSize; i++)
