@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
-import { NavController, PopoverController, AlertController } from 'ionic-angular';
+import { NavController, PopoverController, AlertController, ModalController } from 'ionic-angular';
 
 import { ListPage } from '../list/list';
+import { ConfigPage } from '../config/config';
+
 import { TimeZoneProvider } from './../../providers/timezone.provider';
 import { Storage } from '@ionic/storage';
 
@@ -44,6 +46,7 @@ export class HomePage {
   now = 0;
 
   constructor(
+    private modalCtrl: ModalController,
     public navCtrl: NavController,
     private alertCtrl: AlertController,
     private timezoneProvider: TimeZoneProvider,
@@ -104,7 +107,6 @@ export class HomePage {
 
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
   }
-
 
   refreshLinesOnScore() {
     this.itemsInView = this.items.filter(item => {
@@ -205,7 +207,7 @@ export class HomePage {
     });
 
     popover.onDidDismiss(data => {
-     // console.log('Recevied data', data)
+      // console.log('Recevied data', data)
 
       if (data) {
         area.area_name = data['area_name'];
@@ -275,56 +277,26 @@ export class HomePage {
     this.refreshLinesOnScore();
   }
 
-  doFilterCheckbox(currentnice_code: number) {
-    let alert = this.alertCtrl.create();
-    alert.setTitle('Select score filter');
+  openSettings(currentnice_code: number) {
 
-    alert.addInput({
-      type: 'checkbox',
-      label: '>75%',
-      value: '75',
-      checked: currentnice_code > 75
+    let modal = this.modalCtrl.create(ConfigPage, {
+      scoreFilter: this.scoreFilter,
+      earlierSelectedAreasearler: this.earlierSelectedAreas
     });
 
-    alert.addInput({
-      type: 'checkbox',
-      label: '>50%',
-      value: '50'
-    });
-
-    alert.addInput({
-      type: 'checkbox',
-      label: '>25%',
-      value: '25'
-    });
-
-    alert.addInput({
-      type: 'checkbox',
-      label: 'All',
-      value: '0'
-    });
-
-    alert.addButton('Cancel');
-    alert.addButton({
-      text: 'Okay',
-      handler: data => {
-        //   console.log('Checkbox data:', data);
-
-        if (data) {
-          let lowest = 100;
-          data.map(value => {
-            if (Number(value) < lowest)
-              lowest = Number(value);
-          })
-
-          this.scoreFilter = lowest;
-        }
-
-        this.refreshLinesOnScore()
+    modal.onDidDismiss(data => {
+      if (data) {
+        let lowest = 100;
+        data.map(value => {
+          if (Number(value) < lowest)
+            lowest = Number(value);
+        })
+        this.scoreFilter = lowest;
       }
-    });
-    alert.present().then(() => {
-    });
+
+      this.refreshLinesOnScore()
+    })
+    modal.present();
   }
 
   doInfinite(infiniteScroll) {

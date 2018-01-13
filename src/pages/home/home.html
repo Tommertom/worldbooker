@@ -2,7 +2,7 @@
   <ion-grid style="padding-bottom: 0px">
     <ion-row class="grid-header">
       <ion-col col-1 text-center [style.background-color]="'blue'">
-        <span (click)="doFilterCheckbox(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
+        <span (click)="openSettings(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
       </ion-col>
       <ion-col *ngFor="let area of selectedAreas" text-center [style.background-color]="'blue'">
         <span (click)="changeArea(area)">{{area.area_city}}</span>
@@ -15,7 +15,7 @@
   <ion-grid style="padding-top: 0px">
     <ion-row *ngFor="let j of itemsInView">
 
-      <ion-col col-1 text-center class="score-column" [style.background-color]="'blue'">
+      <ion-col col-1 text-nowrap text-center class="score-column" [style.background-color]="'blue'">
         {{j.overall_score}}%
       </ion-col>
 
