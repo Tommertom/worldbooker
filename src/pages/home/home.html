@@ -1,13 +1,18 @@
-<ion-content>
-  <ion-grid>
-    <ion-row class="grid-header" style="position: sticky; top: 5;left: 0; right: 0; z-index: 9999">
+<ion-header>
+  <ion-grid style="padding-bottom: 0px">
+    <ion-row class="grid-header">
       <ion-col col-1 text-center [style.background-color]="'blue'">
-        <span (click)="doFilterCheckbox(scoreFilter)"> <ion-icon name="search"></ion-icon> </span>
+        <span (click)="doFilterCheckbox(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
       </ion-col>
       <ion-col *ngFor="let area of selectedAreas" text-center [style.background-color]="'blue'">
-        <span (click)="changeArea(area)">  {{area.city}}</span>
+        <span (click)="changeArea(area)">{{area.area_city}}</span>
       </ion-col>
     </ion-row>
+  </ion-grid >
+</ion-header>
+
+<ion-content>
+  <ion-grid style="padding-top: 0px">
     <ion-row *ngFor="let j of itemsInView">
 
       <ion-col col-1 text-center class="score-column" [style.background-color]="'blue'">

@@ -6,14 +6,14 @@ import { NavController, NavParams, ViewController } from 'ionic-angular';
   templateUrl: 'list.html'
 })
 export class ListPage {
-  preferredAreas: any;
+  earlierSelectedAreas: Array<Object> = [];
   allAreas: any;
   displayList: any;
   myInput: string = "";
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController) {
 
-    this.preferredAreas = navParams.get('preferredAreas');
+    this.earlierSelectedAreas = navParams.get('earlierSelectedAreas');
     this.allAreas = navParams.get('allAreas');
 
     /*
@@ -25,7 +25,7 @@ export class ListPage {
     */
 
     this.refreshDisplayList();
-    console.log('AL AREAS', this.allAreas);
+    console.log('AL AREAS', this.allAreas, this.earlierSelectedAreas);
   }
 
   onInput(event) {
@@ -47,8 +47,7 @@ export class ListPage {
         })
     
         */
-    this.displayList = this.preferredAreas
-      .concat(this.allAreas)
+    this.displayList = this.allAreas
       .filter(area => {
         return (area['area_name'] + ' ' + area['city']).toLowerCase().indexOf(this.myInput.toLowerCase()) > -1
       })

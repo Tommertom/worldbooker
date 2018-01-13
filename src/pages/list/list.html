@@ -1,10 +1,17 @@
 <ion-header>
-<ion-searchbar [(ngModel)]="myInput" (ionInput)="onInput($event)" (ionCancel)="onCancel($event)">
-</ion-searchbar>
+  <ion-searchbar [(ngModel)]="myInput" (ionInput)="onInput($event)" (ionCancel)="onCancel($event)">
+  </ion-searchbar>
 </ion-header>
 
-<ion-content> 
+<ion-content>
   <ion-list>
+
+    <ion-item *ngFor="let area of earlierSelectedAreas" (click)="itemClick(area)">
+      {{area.area_name}}
+    </ion-item>
+  
+    <br *ngIf="earlierSelectedAreas.length>0">
+
     <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">
       {{area.area_name}}
     </ion-item>

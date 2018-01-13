@@ -5,7 +5,7 @@ import { ListPage } from '../list/list';
 import { TimeZoneProvider } from './../../providers/timezone.provider';
 import { Storage } from '@ionic/storage';
 
-const hourInMilSecs = 60 * 60 * 1000;
+const hourInMilSecs = (60 * 60 * 1000) / 2;
 const scrollPageSize = 60;
 
 export interface DisplayLine {
@@ -38,6 +38,7 @@ export class HomePage {
 
   selectedAreas: Array<Area> = [];
   possibleAreas: Array<Area> = [];
+  earlierSelectedAreas: Array<Area> = [];
 
   scoreFilter: number = 0;
   now = 0;
@@ -68,19 +69,30 @@ export class HomePage {
 
     this.storage.ready()
       .then(() => {
+
+        this.storage.get('earlierSelectedAreas')
+          .then(val => {
+            if (val)
+              this.earlierSelectedAreas = val
+            else this.earlierSelectedAreas = [];
+          })
+
         this.storage.get('selectedAreas')
           .then(val => {
 
-            if (val != null) {
-              this.selectedAreas = val;
-            } else
+            this.selectedAreas = [];
 
+            if (val != null)
+              this.selectedAreas = val;
+
+            if (this.selectedAreas.length == 0)
               this.selectedAreas = [
                 { area_name: 'Europe/Amsterdam', area_city: 'Amsterdam' },
                 { area_name: 'Asia/Singapore', area_city: 'Singapore' },
                 { area_name: 'America/St_Barthelemy', area_city: 'St_Barthelemy' },
                 { area_name: 'Europe/Volgograd', area_city: 'Volgograd' }
               ];
+
           })
           .then(() => {
             for (let i = 0; i < scrollPageSize; i++)
@@ -187,21 +199,26 @@ export class HomePage {
   changeArea(area) {
     //    console.log('AAREE', area)
 
-    let popover = this.popoverCtrl.create(ListPage, { preferredAreas: [], allAreas: this.possibleAreas }, {
+    let popover = this.popoverCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas }, {
       showBackdrop: true,
       enableBackdropDismiss: true
     });
 
     popover.onDidDismiss(data => {
-      console.log('Recevied data', data)
+     // console.log('Recevied data', data)
 
       if (data) {
-        area.area_name = data['area_name']
-        area.area_city = data['city'];
+        area.area_name = data['area_name'];
+        area.area_city = data['area_city'];
+
+        if (this.earlierSelectedAreas.filter((areaItem => { return areaItem.area_name == area.area_name })).length == 0) {
+          this.earlierSelectedAreas.push(area);
+          this.storage.set('earlierSelectedAreas', this.earlierSelectedAreas)
+        }
+
+        console.log('selectedAreas', this.selectedAreas, this.earlierSelectedAreas);
 
         this.updateTimeLines();
-
-        console.log('selectedAreas', this.selectedAreas);
 
         this.storage.set('selectedAreas', this.selectedAreas);
       }
@@ -283,7 +300,7 @@ export class HomePage {
 
     alert.addInput({
       type: 'checkbox',
-      label: 'all',
+      label: 'All',
       value: '0'
     });
 
@@ -291,7 +308,7 @@ export class HomePage {
     alert.addButton({
       text: 'Okay',
       handler: data => {
-        console.log('Checkbox data:', data);
+        //   console.log('Checkbox data:', data);
 
         if (data) {
           let lowest = 100;
