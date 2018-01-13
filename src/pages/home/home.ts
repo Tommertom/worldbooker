@@ -48,7 +48,7 @@ export class HomePage {
   constructor(
     private modalCtrl: ModalController,
     public navCtrl: NavController,
-    private alertCtrl: AlertController,
+    //    private alertCtrl: AlertController,
     private timezoneProvider: TimeZoneProvider,
     private storage: Storage,
     private popoverCtrl: PopoverController) {
@@ -70,45 +70,7 @@ export class HomePage {
 
     this.now = Date.now();
 
-    this.storage.ready()
-      .then(() => {
-
-        this.storage.get('earlierSelectedAreas')
-          .then(val => {
-            if (val)
-              this.earlierSelectedAreas = val
-            else this.earlierSelectedAreas = [];
-          })
-
-        this.storage.get('selectedAreas')
-          .then(val => {
-
-            this.selectedAreas = [];
-
-            if (val != null)
-              this.selectedAreas = val;
-
-
-            this.selectedAreas = [];
-            
-            if (this.selectedAreas.length == 0) {
-              this.selectedAreas = [
-                { area_name: 'Europe/Amsterdam', area_city: 'Amsterdam' },
-                { area_name: 'Asia/Singapore', area_city: 'Singapore' },
-                { area_name: 'America/St_Barthelemy', area_city: 'St_Barthelemy' },
-                { area_name: 'Europe/Volgograd', area_city: 'Volgograd' }
-              ];
-
-              this.storage.set('selectedAreas', this.selectedAreas)
-            }
-          })
-          .then(() => {
-            for (let i = 0; i < scrollPageSize; i++)
-              this.addTimeLine();
-
-            this.refreshLinesOnScore();
-          })
-      })
+    this.loadSettings();
 
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
   }
@@ -180,22 +142,36 @@ export class HomePage {
 
       let area_name = area['area_name'];
 
-      let niceCode = this.getNiceCode(area_name, time)
+      try {
+        let niceCode = this.getNiceCode(area_name, time)
 
-      let backColor = 'green';
-      if (niceCode == 1) backColor = 'orange';
-      if (niceCode == 2) backColor = 'red';
+        let backColor = 'green';
+        if (niceCode == 1) backColor = 'orange';
+        if (niceCode == 2) backColor = 'red';
 
-      lineItem.push({
-        area_name: area.area_name,
-        area_city: area.area_city,
-        time_number: time,
-        time_string: this.getTimeString(area_name, time),
-        backgroundcolor: backColor, //this.getBackColor(area, time),
-        nice_code: niceCode
-      })
+        lineItem.push({
+          area_name: area.area_name,
+          area_city: area.area_city,
+          time_number: time,
+          time_string: this.getTimeString(area_name, time),
+          backgroundcolor: backColor, //this.getBackColor(area, time),
+          nice_code: niceCode
+        })
 
-      overallScore += niceCode;
+        overallScore += niceCode;
+      }
+      catch (err) {
+        lineItem.push({
+          area_name: area.area_name,
+          area_city: area.area_city,
+          time_number: time,
+          time_string: '',
+          backgroundcolor: 'white', //this.getBackColor(area, time),
+          nice_code: 0
+        })
+      }
+      finally {
+      }
     })
 
     overallScore = Math.round(100 - (100 * (overallScore / (lineItem.length * 2))));
@@ -204,7 +180,6 @@ export class HomePage {
   }
 
   changeArea(area) {
-    //    console.log('AAREE', area)
 
     let popover = this.popoverCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas }, {
       showBackdrop: true,
@@ -212,22 +187,23 @@ export class HomePage {
     });
 
     popover.onDidDismiss(data => {
-      // console.log('Recevied data', data)
-
       if (data) {
+
+
         area.area_name = data['area_name'];
         area.area_city = data['area_city'];
 
-        if (this.earlierSelectedAreas.filter((areaItem => { return areaItem.area_name == area.area_name })).length == 0) {
-          this.earlierSelectedAreas.push(area);
-          this.storage.set('earlierSelectedAreas', this.earlierSelectedAreas)
-        }
+        if (area.area_name != 'undefined')
+          if (this.earlierSelectedAreas.filter((areaItem => { return areaItem.area_name == area.area_name })).length == 0) {
+            this.earlierSelectedAreas.push(area);
+            this.saveSettings();
+          }
 
         console.log('selectedAreas', this.selectedAreas, this.earlierSelectedAreas);
 
         this.updateTimeLines();
 
-        this.storage.set('selectedAreas', this.selectedAreas);
+        this.saveSettings();
       }
     })
     popover.present({});
@@ -242,43 +218,6 @@ export class HomePage {
 
     for (let i = 0; i < itemCount; i++)
       this.addTimeLine();
-
-    /*
-    
-        this.items.map(itemrow => {
-          let lineItems: Array<AreaDisplay> = [];
-          let overallScore = 0;
-    
-          lineItems = itemrow.areas;
-    
-          lineItems
-            .map(area => {
-              let niceCode = area.nice_code;
-              overallScore = 0;
-    
-              if (area.area_city == areaToRefresh.area_city) {
-    
-                niceCode = this.getNiceCode(area.area_name, area.time_number)
-    
-                let backColor = 'green';
-                if (niceCode == 1) backColor = 'orange';
-                if (niceCode == 2) backColor = 'red';
-    
-                // assign new values
-                area.backgroundcolor = backColor;
-                area.nice_code = niceCode;
-                area.time_string = this.getTimeString(area.area_name, area.time_number);
-              }
-    
-              overallScore += niceCode;
-            })
-    
-          overallScore = Math.round(100 - (100 * (overallScore / (lineItems.length * 2))));
-    
-          itemrow.overall_score = overallScore;
-        })
-    */
-
     this.refreshLinesOnScore();
   }
 
@@ -286,17 +225,24 @@ export class HomePage {
 
     let modal = this.modalCtrl.create(ConfigPage, {
       scoreFilter: this.scoreFilter,
-      earlierSelectedAreasearler: this.earlierSelectedAreas
+      earlierSelectedAreas: this.earlierSelectedAreas
     });
 
     modal.onDidDismiss(data => {
       if (data) {
-        let lowest = 100;
-        data.map(value => {
-          if (Number(value) < lowest)
-            lowest = Number(value);
-        })
-        this.scoreFilter = lowest;
+
+        console.log('RECEIVED DATA', data)
+        this.scoreFilter = data['scoreFilter'];
+        this.earlierSelectedAreas = data['earlierSelectedAreas']
+
+        /*
+                let lowest = 100;
+                data.map(value => {
+                  if (Number(value) < lowest)
+                    lowest = Number(value);
+                })
+                this.scoreFilter = lowest;
+        */
       }
 
       this.refreshLinesOnScore()
@@ -313,5 +259,52 @@ export class HomePage {
 
       infiniteScroll.complete();
     }, 1);
+  }
+
+  saveSettings() {
+    this.storage.set('selectedAreas', this.selectedAreas);
+    this.storage.set('earlierSelectedAreas', this.earlierSelectedAreas);
+  }
+
+  loadSettings() {
+
+    this.storage.ready()
+      .then(() => {
+
+        this.storage.get('earlierSelectedAreas')
+          .then(val => {
+            if (val)
+              this.earlierSelectedAreas = val
+            else this.earlierSelectedAreas = [];
+          })
+
+        this.storage.get('selectedAreas')
+          .then(val => {
+
+            this.selectedAreas = [];
+
+            if (val != null)
+              this.selectedAreas = val;
+
+            //this.selectedAreas = [];
+
+            if (this.selectedAreas.length == 0) {
+              this.selectedAreas = [
+                { area_name: 'Europe/Amsterdam', area_city: 'Amsterdam' },
+                { area_name: 'Asia/Singapore', area_city: 'Singapore' },
+                { area_name: 'America/St_Barthelemy', area_city: 'St_Barthelemy' },
+                { area_name: 'Europe/Volgograd', area_city: 'Volgograd' }
+              ];
+
+              this.saveSettings();
+            }
+          })
+          .then(() => {
+            for (let i = 0; i < scrollPageSize; i++)
+              this.addTimeLine();
+
+            this.refreshLinesOnScore();
+          })
+      })
   }
 }

@@ -1,16 +1,32 @@
 <ion-header>
-  <ion-searchbar [(ngModel)]="myInput" (ionInput)="onInput($event)" (ionCancel)="onCancel($event)">
-  </ion-searchbar>
+  <ion-toolbar>
+    <ion-title>
+      Settings
+    </ion-title>
+    <ion-buttons end>
+      <button ion-button (click)="close()">
+        <span color="primary" >Close</span>
+     </button>
+    </ion-buttons>
+  </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-list>
 
-    <ion-item *ngFor="let area of earlierSelectedAreas" (click)="itemClick(area)">
-      {{area.area_name}}
+    <ion-item>
+      <ion-label>Select score filter</ion-label>
+      <ion-select [(ngModel)]="scoreFilter">
+        <ion-option value="75">>75%</ion-option>
+        <ion-option value="50">>50%</ion-option>
+        <ion-option value="25">>25%</ion-option>
+        <ion-option value="0">>all</ion-option>
+      </ion-select>
     </ion-item>
-  
-    <br *ngIf="earlierSelectedAreas.length>0">
+
+    <ion-item>
+      <button ion-button full (click)="clearHistory()">Clear history of areas</button>
+    </ion-item>
 
     <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">
       {{area.area_name}}

@@ -6,10 +6,16 @@
 <ion-content>
   <ion-list>
 
+    <ion-item (click)="itemClick({area_name:'undefined', area_city:'undefined'})">
+      Remove area
+    </ion-item>
+
+    <br>
+
     <ion-item *ngFor="let area of earlierSelectedAreas" (click)="itemClick(area)">
       {{area.area_name}}
     </ion-item>
-  
+
     <br *ngIf="earlierSelectedAreas.length>0">
 
     <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">

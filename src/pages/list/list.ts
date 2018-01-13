@@ -29,13 +29,13 @@ export class ListPage {
   }
 
   onInput(event) {
-    console.log('EVENT ', event, this.myInput);
+    //console.log('EVENT ', event, this.myInput);
     this.refreshDisplayList();
   }
 
 
   onCancel(event) {
-    console.log('EVENT ', event, this.myInput);
+    //console.log('EVENT ', event, this.myInput);
     this.refreshDisplayList();
   }
 

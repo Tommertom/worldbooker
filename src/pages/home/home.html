@@ -5,10 +5,11 @@
         <span (click)="openSettings(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
       </ion-col>
       <ion-col *ngFor="let area of selectedAreas" text-center [style.background-color]="'blue'">
-        <span (click)="changeArea(area)">{{area.area_city}}</span>
+        <span *ngIf="area.area_city!='undefined'" (click)="changeArea(area)">{{area.area_city}}</span>
+        <span *ngIf="area.area_city=='undefined'" (click)="changeArea(area)">No area selected</span>
       </ion-col>
     </ion-row>
-  </ion-grid >
+  </ion-grid>
 </ion-header>
 
 <ion-content>
@@ -20,9 +21,10 @@
       </ion-col>
 
       <ng-container *ngFor="let i of j.areas">
-        <ion-col text-nowrap text-center class="area-display-cell" [style.background-color]="i.backgroundcolor">
+        <ion-col *ngIf="i.area_city!='undefined'" text-nowrap text-center class="area-display-cell" [style.background-color]="i.backgroundcolor">
           {{i.time_string}}
         </ion-col>
+        <ion-col *ngIf="i.area_city=='undefined'"> </ion-col>
       </ng-container>
 
     </ion-row>
