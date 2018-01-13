@@ -1,13 +1,16 @@
 {
   "name": "Ionic",
-  "short_name": "Ionic",
+  "short_name": "Worldbooker",
   "start_url": "index.html",
   "display": "standalone",
+  "description":"A worldbooker app",
   "icons": [{
     "src": "assets/imgs/logo.png",
     "sizes": "512x512",
     "type": "image/png"
   }],
   "background_color": "#4e8ef7",
-  "theme_color": "#4e8ef7"
+  "theme_color": "#4e8ef7",
+  "splash_pages":null,
+  "orientation":"landscape"
 }
