@@ -7,7 +7,7 @@ import { MyApp } from './app.component';
 import { HomePage } from '../pages/home/home';
 import { ListPage } from '../pages/list/list';
 import { ConfigPage } from '../pages/config/config';
-
+import { TimeslotPage } from '../pages/timeslot/timeslot';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -16,13 +16,13 @@ import { TimeZoneProvider } from '../providers/timezone.provider';
 
 import { IonicStorageModule } from '@ionic/storage';
 
-
 @NgModule({
   declarations: [
     MyApp,
     HomePage,
     ListPage,
-    ConfigPage
+    ConfigPage,
+    TimeslotPage
   ],
   imports: [
     BrowserModule, HttpModule,
@@ -37,7 +37,8 @@ import { IonicStorageModule } from '@ionic/storage';
     MyApp,
     HomePage,
     ListPage,
-    ConfigPage
+    ConfigPage,
+    TimeslotPage
   ],
   providers: [
     StatusBar, TimeZoneProvider,

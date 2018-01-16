@@ -1,12 +1,18 @@
 <ion-header>
   <ion-grid style="padding-bottom: 0px">
     <ion-row class="grid-header">
-      <ion-col col-1 text-center [style.background-color]="'blue'">
+      <ion-col col-1 text-center [style.background-color]="'#001f3f'" col-2>
         <span (click)="openSettings(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
       </ion-col>
-      <ion-col *ngFor="let area of selectedAreas" text-nowrap text-center [style.background-color]="'blue'">
-        <span *ngIf="area.area_city!='undefined'" (click)="changeArea(area)">{{area.area_city}}</span>
-        <span *ngIf="area.area_city=='undefined'" (click)="changeArea(area)">No area selected</span>
+      <ion-col *ngFor="let area of selectedAreas"  col-3 text-nowrap text-center [style.background-color]="'#001f3f'">
+        <span *ngIf="area.area_city!='undefined'" (click)="changeArea(area)">
+          <ng-container *ngIf="isPortrait">{{area.area_city_short}}</ng-container>
+          <ng-container *ngIf="!isPortrait">{{area.area_city}}</ng-container>
+        </span>
+        <span *ngIf="area.area_city=='undefined'" (click)="changeArea(area)">
+          <ng-container *ngIf="isPortrait">N/A</ng-container>
+          <ng-container *ngIf="!isPortrait">No area selected</ng-container>
+        </span>
       </ion-col>
     </ion-row>
   </ion-grid>
@@ -14,15 +20,16 @@
 
 <ion-content>
   <ion-grid style="padding-top:0px">
-    <ion-row *ngFor="let j of itemsInView">
+    <ion-row *ngFor="let j of itemsInView" (click)="openMeetingLine(j)">
 
-      <ion-col col-1 text-nowrap text-center class="score-column" [style.background-color]="'blue'">
+      <ion-col col-2 text-nowrap text-center class="score-column" [style.background-color]="'#001f3f'">
         {{j.overall_score}}%
       </ion-col>
 
       <ng-container *ngFor="let i of j.areas">
-        <ion-col *ngIf="i.area_city!='undefined'" text-nowrap text-center class="area-display-cell" [style.background-color]="i.backgroundcolor">
-          {{i.time_string}}
+        <ion-col *ngIf="i.area_city!='undefined'" col-3 text-nowrap text-center class="area-display-cell" [style.background-color]="i.backgroundcolor">
+          <ng-container *ngIf="!isPortrait"> {{i.time_string}} </ng-container>
+          <ng-container *ngIf="isPortrait">{{i.time_string_short}} </ng-container>
         </ion-col>
         <ion-col *ngIf="i.area_city=='undefined'"> </ion-col>
       </ng-container>
