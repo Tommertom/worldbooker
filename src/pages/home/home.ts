@@ -256,7 +256,7 @@ export class HomePage {
   }
 
   openMeetingLine(meetingLine) {
-  //  console.log('MEETTTTTT', meetingLine)
+    //  console.log('MEETTTTTT', meetingLine)
     //    let modal = this.popoverCtrl.create(TimeslotPage, {
     //     displayLine: meetingLine
     //   });
@@ -272,7 +272,11 @@ export class HomePage {
           //role: 'destructive',
           //  icon: !this.platform.is('ios') ? 'trash' : null,
           handler: () => {
-        //    console.log('Delete clicked');
+            //    console.log('Delete clicked');
+            if (document.queryCommandSupported('copy')) {
+              console.log('YESSSS')
+//https://medium.com/coding-snippets/copy-to-clipboard-with-ionic-2-6c31356c008
+            }
             this.doToast('URL copied to clipboard');
           }
         },

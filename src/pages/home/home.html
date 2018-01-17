@@ -20,7 +20,7 @@
 
 <ion-content>
   <ion-grid style="padding-top:0px">
-    <ion-row *ngFor="let j of itemsInView" (click)="openMeetingLine(j)">
+    <ion-row *ngFor="let j of itemsInView" >
 
       <ion-col col-2 text-nowrap text-center class="score-column" [style.background-color]="'#001f3f'">
         {{j.overall_score}}%
