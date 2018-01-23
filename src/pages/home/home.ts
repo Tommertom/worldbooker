@@ -365,7 +365,7 @@ export class HomePage {
               this.selectedAreas = val;
 
 
-            this.selectedAreas = [];
+           // this.selectedAreas = [];
             //console.log('LOADED SELECETED AREAS', val, this.selectedAreas)
 
             // migration
