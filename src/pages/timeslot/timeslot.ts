@@ -2,7 +2,7 @@ import { DisplayLine } from './../home/home';
 import { Component } from '@angular/core';
 import { NavController, NavParams, ViewController } from 'ionic-angular';
 
-
+import * as Clipboard from 'clipboard/dist/clipboard.min.js';
 
 @Component({
   selector: 'page-timeslot',
@@ -11,20 +11,21 @@ import { NavController, NavParams, ViewController } from 'ionic-angular';
 export class TimeslotPage {
 
   meeting: DisplayLine;
+  clipboard: any;
+  urlToCopy: string = "";
 
   constructor(public navCtrl: NavController, public navParams: NavParams, public viewCtrl: ViewController) {
 
-    /*
-     this.entities.sort(function (a, b) {
-         let x = a['entityname'].toLowerCase();
-         let y = b['entityname'].toLowerCase();
-         return x < y ? -1 : x > y ? 1 : 0;
-       });
-    */
+    this.urlToCopy = this.navParams.get('urlToCopy');
+  }
 
-    this.meeting = this.navParams.get('displayLine');
+  ionViewDidEnter() {
     console.log(' THIS MEETING', this.meeting)
+    this.clipboard = new Clipboard('#cpyBtn');
 
+    //https://medium.com/coding-snippets/copy-to-clipboard-with-ionic-2-6c31356c008
+
+    this.clipboard.on('success', () => { console.log('YES') });
   }
 
   close() {

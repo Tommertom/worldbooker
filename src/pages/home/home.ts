@@ -1,10 +1,9 @@
-import { TimeslotPage } from './../timeslot/timeslot';
-import { NavController, PopoverController, AlertController, ModalController, Platform, ActionSheetController, ToastController } from 'ionic-angular';
-
+import { PopoverController, AlertController, ModalController, Platform, ActionSheetController, ToastController } from 'ionic-angular';
 import { Component } from '@angular/core';
 
 import { ListPage } from '../list/list';
 import { ConfigPage } from '../config/config';
+import { TimeslotPage } from './../timeslot/timeslot';
 
 import { Area, TimeZoneProvider } from './../../providers/timezone.provider';
 import { Storage } from '@ionic/storage';
@@ -16,12 +15,8 @@ const scrollPageSize = 60;
   tijd instellen
   tijd in halve/hele uren
   underscore in namen cities aanpassen 
-  namen variables
-  documentatie functies
-   commentaarteksten begin van files
   icons en logo
   sharing of ICS
-  deeplinking
 */
 
 export interface DisplayLine {
@@ -40,29 +35,34 @@ export interface AreaDisplay {
   time_string_short: string;
 }
 
-
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class HomePage {
 
+  // key values to build the view in the app
   items: Array<DisplayLine> = [];
   itemsInView: Array<DisplayLine> = [];
+  selectedAreas: Array<AreaDisplay> = []; // the areas selected in the top row of the app
+  now: number = 0; // the starting time for the view
 
-  selectedAreas: Array<AreaDisplay> = [];
-  possibleAreas: Array<Area> = [];
+  // variables for the selection of areas in the top row
+  possibleAreas: Array<Area> = []; // overview of potential areas (name/region)
   earlierSelectedAreas: Array<Area> = [];
 
-  scoreFilter: number = 0;
-  now: number = 0;
-
+  // view related parameters
   isPortrait: boolean = true;
+  scoreFilter: number = 0;
+
+  // for the copy/paste action
+  clipboard: any;
+  txtToCopy: string = "copytext";
 
   constructor(
     private toastCtrl: ToastController,
     private modalCtrl: ModalController,
-    private navCtrl: NavController,
+    private alertCtrl: AlertController,
     private actionsheetCtrl: ActionSheetController,
     private timezoneProvider: TimeZoneProvider,
     private storage: Storage,
@@ -84,40 +84,33 @@ export class HomePage {
         });
       })
 
-    this.now = Date.now();
-
-    this.loadSettings();
+    let queryDate = this.platform.getQueryParam('now');
+    if (queryDate != undefined) this.now = Number(queryDate)
+    else this.now = Date.now();
 
     this.platform.ready()
       .then(() => {
-        this.isPortrait = this.platform.isPortrait()
+        this.loadSettings();
+        this.isPortrait = this.platform.isPortrait();
       })
   }
 
   ionViewDidEnter() {
     window.addEventListener("orientationchange", () => {
-      if (this.platform.isLandscape()) {
-        // console.log('IsLandscape')
-        this.isPortrait = false;
-      }
-      else if (this.platform.isPortrait()) {
-        //  console.log('IsPortrait')
-        this.isPortrait = true;
-      }
+      this.isPortrait = this.platform.isPortrait();
     }, false);
   }
 
-  refreshLinesOnScore() {
+  filterLinesUsingScore() {
     this.itemsInView = this.items.filter(item => {
-      return item.overall_score > this.scoreFilter
+      return item.overall_score >= this.scoreFilter
     })
   }
 
   doToast(message) {
-    let toast = this.toastCtrl.create({
+    this.toastCtrl.create({
       message: message,
-      duration: 2000,
-      //position: position
+      duration: 2000
     }).present();
   }
 
@@ -125,7 +118,6 @@ export class HomePage {
     let time: string = "";
 
     time = new Intl.DateTimeFormat('en-US', {
-      //  year: 'numeric', month: 'numeric', day: 'numeric',
       hour: 'numeric', minute: 'numeric',// second: 'numeric',
       hour12: false,
       timeZone: timezone
@@ -144,29 +136,38 @@ export class HomePage {
   }
 
   addTimeLine() {
-    let time = new Date(this.now + this.items.length * hourInMilSecs);
-
+    // let's round the first entry to nearest whole/half
     if (this.items.length == 0) {
       let minutes = new Date(this.now).getMinutes();
       if (minutes < 30) this.now = new Date(this.now - (minutes * 60 * 1000)).getTime()
       if (minutes > 30) this.now = new Date(this.now + ((60 - minutes) * 60 * 1000)).getTime()
     }
 
+    // what will be the time to use for this line
+    let time = new Date(this.now + this.items.length * hourInMilSecs);
+
+    // we are going to fill the line, but first it is empty
     let lineItem: Array<AreaDisplay> = [];
-    let overallScore = 0;
+
+    // the counters for the score
+    let totallinescore = 0;
+    let validareascount = 0;
+
+    // let's go through all selected areas 
     this.selectedAreas.map(area => {
 
       let area_name = area.area_name;
-
       try {
         let niceCode: number = 0;
         if (area_name == 'undefined') niceCode = -1
         else niceCode = this.getNiceCode(area_name, time)
 
+        // try to define the color for the cell
         let backColor = '#2ECC40';
         if (niceCode == 1) backColor = '#FF851B';
         if (niceCode == 2) backColor = '#FF4136';
 
+        // add the item, if there is a valid one (blank or colored)
         if (niceCode == -1) lineItem.push({
           area_name: area.area_name,
           area_city: area.area_city,
@@ -177,22 +178,26 @@ export class HomePage {
           backgroundcolor: 'white',
           nice_code: 0
         })
-        else lineItem.push({
-          area_name: area.area_name,
-          area_city: area.area_city,
-          area_city_short: area.area_city.substring(0, 3).toUpperCase(),
-          time_number: time.getTime(),
-          time_string: this.timezoneProvider.getTimeStringLong(area_name, time),
-          time_string_short: this.timezoneProvider.getTimeStringShort(area_name, time),
-          backgroundcolor: backColor,
-          nice_code: niceCode,
-        })
+        else {
+          // add the valid item
+          lineItem.push({
+            area_name: area.area_name,
+            area_city: area.area_city,
+            area_city_short: area.area_city.substring(0, 3).toUpperCase(),
+            time_number: time.getTime(),
+            time_string: this.timezoneProvider.getTimeStringLong(area_name, time),
+            time_string_short: this.timezoneProvider.getTimeStringShort(area_name, time),
+            backgroundcolor: backColor,
+            nice_code: niceCode,
+          })
 
-        overallScore += niceCode;
+          // change the count
+          validareascount += 1;
+          totallinescore += niceCode;
+        }
       }
-      // we have found an illegal timezone
+      // we have found an illegal timezone, which will just lead to an empty cell
       catch (err) {
-        //console.log('PRUT ', err)
         lineItem.push({
           area_name: area.area_name,
           area_city: area.area_city,
@@ -204,57 +209,87 @@ export class HomePage {
           nice_code: 0
         })
       }
-      finally {
-      }
     })
 
-    // console.log('THIS ITEMS', this.items)
-    overallScore = Math.round(100 - (100 * (overallScore / (lineItem.length * 2))));
-
-    this.items.push({ overall_score: overallScore, areas: lineItem });
+    // add the item to the table
+    this.items.push({
+      overall_score: Math.round(100 - (100 * (totallinescore / (validareascount * 2)))), // 2 is max score
+      areas: lineItem
+    });
   }
 
   changeArea(area) {
-    let popover = this.modalCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas }, {
-      showBackdrop: true,
-      enableBackdropDismiss: true
-    });
+    let modal = this.modalCtrl.create(ListPage, { earlierSelectedAreas: this.earlierSelectedAreas, allAreas: this.possibleAreas });
 
-    popover.onDidDismiss(data => {
+    modal.onDidDismiss(data => {
       if (data) {
-        //console.log(' GETTING DATA', data);
-
         area.area_name = data['area_name'];
         area.area_city = data['area_city'];
         area.area_city_short = <string>area.area_city.substring(0, 3).toUpperCase();
 
+        // do we have a new area? then add it
         if (area.area_name != 'undefined')
           if (this.earlierSelectedAreas.filter((areaItem => { return areaItem.area_name == area.area_name })).length == 0) {
-            //console.log('ADASDSADAS', data, area)
             this.earlierSelectedAreas.push(area);
             this.saveSettings();
           }
 
-        //console.log('selectedAreas', this.selectedAreas, this.earlierSelectedAreas);
+        // make sure we add a new list of timelines
         this.updateTimeLines();
+
+        // and save all the stuff
         this.saveSettings();
       }
     })
-    popover.present({});
-
+    modal.present({});
   }
 
 
   updateTimeLines() {
 
+    // remember how many we have in the view
     let itemCount = this.items.length;
+
+    // reset the view
     this.items = [];
 
+    // add the items
     for (let i = 0; i < itemCount; i++)
       this.addTimeLine();
-    this.refreshLinesOnScore();
+
+    // and apply the filter
+    this.filterLinesUsingScore();
   }
 
+  copyItemURL(meetingLine: DisplayLine) {
+
+    let queryString = this.platform.url().split('?')[0] + '?';
+    let meetingTime: number = 0;
+
+    // build the URL
+    meetingLine.areas.map((area, index) => {
+      if (area.area_name != 'undefined') {
+        queryString += "area" + (index + 1) + "=" + area.area_name + "&";
+        meetingTime = area.time_number;
+      }
+    })
+
+    // finish the URL string
+    if (meetingTime != 0) queryString += "now=" + meetingTime;
+    if (queryString.slice(-1) == '&') queryString = queryString.slice(0, -1);
+    if (queryString.slice(-1) == '?') queryString = queryString.slice(0, -1);
+
+    //console.log('MEETING OPEN ', meetingLine, queryString);
+
+    // open the popover to do the copy/paste action (not working completely)
+    this.popoverCtrl.create(TimeslotPage, {
+      urlToCopy: queryString,
+      meetingLine: meetingLine
+    }).present();
+  }
+
+
+  // not used right now
   openMeetingLine(meetingLine) {
     //  console.log('MEETTTTTT', meetingLine)
     //    let modal = this.popoverCtrl.create(TimeslotPage, {
@@ -262,8 +297,6 @@ export class HomePage {
     //   });
 
     // modal.present();
-
-
     let actionSheet = this.actionsheetCtrl.create({
       //title: 'Actions for timeline',
       buttons: [
@@ -275,7 +308,7 @@ export class HomePage {
             //    console.log('Delete clicked');
             if (document.queryCommandSupported('copy')) {
               console.log('YESSSS')
-//https://medium.com/coding-snippets/copy-to-clipboard-with-ionic-2-6c31356c008
+              //https://medium.com/coding-snippets/copy-to-clipboard-with-ionic-2-6c31356c008
             }
             this.doToast('URL copied to clipboard');
           }
@@ -305,13 +338,66 @@ export class HomePage {
       ]
     });
     actionSheet.present();
-
-
   }
 
+  openScoreFilter() {
+
+    let alert = this.alertCtrl.create();
+    alert.setTitle('Select score');
+
+    alert.addInput({
+      type: 'radio',
+      label: '> 75%',
+      value: '75',
+      checked: true
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '> 50%',
+      value: '50'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: '> 25%',
+      value: '25'
+    });
+
+    alert.addInput({
+      type: 'radio',
+      label: 'All',
+      value: '0'
+    });
+
+    alert.addButton('Cancel');
+    alert.addButton({
+      text: 'Ok',
+      handler: data => {
+        //    console.log('Radio data:', data);
+        //   this.testRadioOpen = false;
+        //  this.testRadioResult = data;
+      }
+    });
+
+    alert.onDidDismiss(data => {
+      //console.log('DATA DREERCEC', data)
+      if (data) {
+        this.scoreFilter = data;
+        this.filterLinesUsingScore();
+        this.saveSettings();
+      }
+    })
+
+    alert.present();
+  }
+
+
+  // not used right now
+  //<span (click)="openSettings(scoreFilter)"> <ion-icon name="settings"></ion-icon> </span>
   openSettings(currentnice_code: number) {
 
-    let modal = this.modalCtrl.create(ConfigPage, {
+    let modal = this.popoverCtrl.create(ConfigPage, {
       scoreFilter: this.scoreFilter,
       earlierSelectedAreas: this.earlierSelectedAreas
     });
@@ -323,7 +409,7 @@ export class HomePage {
 
         this.saveSettings();
 
-        this.refreshLinesOnScore()
+        this.filterLinesUsingScore()
       }
     })
 
@@ -335,7 +421,7 @@ export class HomePage {
       for (let i = 0; i < scrollPageSize; i++)
         this.addTimeLine();
 
-      this.refreshLinesOnScore();
+      this.filterLinesUsingScore();
 
       infiniteScroll.complete();
     }, 1);
@@ -344,38 +430,48 @@ export class HomePage {
   saveSettings() {
     this.storage.set('selectedAreas', this.selectedAreas);
     this.storage.set('earlierSelectedAreas', this.earlierSelectedAreas);
+    this.storage.set('scoreFilter', this.scoreFilter)
   }
 
   loadSettings() {
     this.storage.ready()
       .then(() => {
+
+        this.storage.get('scoreFilter')
+          .then((val: number) => {
+            if (val) this.scoreFilter = val
+            else this.scoreFilter = 0;
+          })
+
         this.storage.get('earlierSelectedAreas')
-          .then(val => {
-            if (val)
-              this.earlierSelectedAreas = val
+          .then((val: Array<Area>) => {
+            if (val) this.earlierSelectedAreas = val
             else this.earlierSelectedAreas = [];
           })
 
         this.storage.get('selectedAreas')
-          .then(val => {
+          .then((val: Array<AreaDisplay>) => {
 
             this.selectedAreas = [];
 
             if (val != null)
               this.selectedAreas = val;
 
+            // check queryparams
+            let queryString = ['area1', 'area2', 'area3', 'area4'];
+            queryString.map((queryString, index) => {
 
-           // this.selectedAreas = [];
-            //console.log('LOADED SELECETED AREAS', val, this.selectedAreas)
+              let queryArg = this.platform.getQueryParam(queryString);
+              if (queryArg)
+                if (queryArg != 'undefined') {
+                  this.selectedAreas[index].area_name = queryArg;
+                  this.selectedAreas[index].area_city = queryArg.split('/').pop();
+                  this.selectedAreas[index].area_city_short = this.selectedAreas[index].area_city.substring(0, 3).toUpperCase();
+                }
+            })
 
-            // migration
-            /*            if (this.selectedAreas)
-                          this.selectedAreas.map(area => {
-                            if (typeof area.area_city_short == 'undefined')
-                              area.area_city_short = area.area_city.substring(0, 3).toUpperCase();
-                          })
-            */
-            //
+            this.saveSettings();
+
             if (this.selectedAreas.length == 0) {
               this.selectedAreas = [{
                 area_name: 'Europe/Amsterdam',
@@ -427,7 +523,7 @@ export class HomePage {
             for (let i = 0; i < scrollPageSize; i++)
               this.addTimeLine();
 
-            this.refreshLinesOnScore();
+            this.filterLinesUsingScore();
           })
       })
   }

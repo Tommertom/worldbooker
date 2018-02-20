@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>
-      Settings
+      Set score filter
     </ion-title>
     <ion-buttons end>
       <button ion-button (click)="close()">
@@ -24,12 +24,5 @@
       </ion-select>
     </ion-item>
 
-    <ion-item>
-      <button ion-button full (click)="clearHistory()">Clear history of areas</button>
-    </ion-item>
-
-    <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">
-      {{area.area_name}}
-    </ion-item>
   </ion-list>
 </ion-content>

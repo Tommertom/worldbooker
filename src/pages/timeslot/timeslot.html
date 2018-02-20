@@ -11,5 +11,9 @@
 
 
 <ion-content padding>
-sadasd  TIMESLOT
+  <textarea style="width:100%" row=1 id="copyTarget" [value]="urlToCopy"></textarea><br>
+  <ion-list>
+
+    <button id="cpyBtn" ion-button data-clipboard-target="#copyTarget">Copy to clipboard</button>
+  </ion-list>
 </ion-content>

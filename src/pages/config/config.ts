@@ -1,6 +1,20 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, ViewController, AlertController } from 'ionic-angular';
 
+/*
+    Abandoned code
+
+    <ion-item>
+      <button ion-button full (click)="clearHistory()">Clear history of areas</button>
+    </ion-item>
+
+    <ion-item *ngFor="let area of displayList" (click)="itemClick(area)">
+      {{area.area_name}}
+    </ion-item>
+
+*/
+
+
 @Component({
   selector: 'page-config',
   templateUrl: 'config.html'
