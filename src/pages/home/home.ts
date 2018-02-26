@@ -342,6 +342,9 @@ export class HomePage {
 
   openScoreFilter() {
 
+    let t = undefined;
+    console.log(t.toString());
+
     let alert = this.alertCtrl.create();
     alert.setTitle('Select score');
 
@@ -391,6 +394,8 @@ export class HomePage {
 
     alert.present();
   }
+
+
 
 
   // not used right now
