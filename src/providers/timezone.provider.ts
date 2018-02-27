@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 
+
 //import { Observable } from 'rxjs/Observable';
-/*
+
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/mergeAll';
@@ -15,7 +16,7 @@ import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/observable/timer';
 import 'rxjs/add/observable/interval';
-*/
+
 export interface Area {
     area_name: string;
     area_city: string;

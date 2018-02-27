@@ -23,7 +23,7 @@ import { IonicStorageModule } from '@ionic/storage';
 
 
 Pro.init('8669ae2f', {
-  appVersion: 'v0.0.2'
+  appVersion: '0.0.2'
 })
 
 
